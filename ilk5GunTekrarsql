@@ -1,0 +1,374 @@
+
+
+--komment yapma goruldugu uzere iki tane (--) isareti ile olur
+--1)Konu:Tablo Olusturma
+ create table arkadaslar(
+ isim varchar(30),
+ yas number,
+ meslek varchar(20),
+ cinsityet char(1)--(K veya E)
+) ;
+--bu sekilde tablo  creat edilir ve kucuk buyuk harf farketmez ancak sql in kendi terimlerini buyuk harfle yazmak gorsel acidan daha guzel olur
+--simdidde creat ettigimiz tabloya degerler atayalim
+
+INSERT INTO arkadaslar VALUES ('Tayfur',27,'issiz','E');
+INSERT INTO arkadaslar VALUES ('Ahmet',20,'tester','E');
+INSERT INTO arkadaslar VALUES ('Nazli',30,'devOps','K');
+ 
+ --bir sonraki asama olusturdugumuz tabloyu ve degerlerini tabloda gorelim
+ SELECT * FROM arkadaslar;
+ --tablomuzu komple silmek icinde asagidai gibi yapiyoruz
+ DROP TABLE arkadaslar;
+ 
+ --parcali veri girisi nyapmak istersekte hangi parcayi girecegimizi belirtmemiz yeterreli
+ INSERT INTO arkadaslar(isim,yas) VALUES ('Nur',33);
+ 
+ --==========================================================================
+ --Gelelim kisitlamalar konusuna yani==>>CONSTRAINS
+ 
+ --1)Bir sutunun bus yani null olmasini istemiyorsak yanina not null diyerek belirtmeliyiz
+  create table arkadaslar1(
+ isim varchar(30) Not NULL,--burda oldugu gibi artik isim stunu bos olamaz
+ boy number(3,2),--bu sekilde yazimda virgullu sayilar icin 5:toplam rakam sayisini, 2:ise virgulden sonraki rakam sayisini belirtir
+ meslek varchar(20),--buradaki 20: degeri ise yazilacak degerin max uzunlugunu belirtir
+  cinsityet char(1),--(K veya E)--charda ise icinde yazilan degerden ne az ne de cok sayida deger olamaz 
+  dogum_tarihi date
+  
+) ;
+
+INSERT INTO arkadaslar1 VALUES (null,1.76,'issiz','E','11-02-1994');--burada ismi bos biraktigimiz icin bize hata verecek ve olusturmayacaktir
+INSERT INTO arkadaslar1 VALUES ('Ahmet',2.00,'tester','E','14-01-2020');
+INSERT INTO arkadaslar1 VALUES ('Nazli',1.30,'devOps','K','14-01-2020');
+
+--2)bir degerden sadece bir kisisde olmasini istersek tc numarasi gibi onu UNIQUE yapariz ve baskasida kullanmak isterse hata alir
+
+create table arkadaslar2(
+ isim varchar(30),
+ yas number,
+ meslek varchar(20) UNIQUE,--bu sekýlde yaptýgýmýzda her meslekten býr tane olmasý gerekýr ayný meslekten ýký kýsý olamaz
+ cinsityet char(1)--(K veya E)
+) ;
+
+INSERT INTO arkadaslar2 VALUES ('Tayfur',27,'issiz','E');
+INSERT INTO arkadaslar2 VALUES ('Ahmet',20,'tester','E');
+INSERT INTO arkadaslar2 VALUES ('Nazli',30,'tester','K');--bu satirimiz hata verecektir cunku meslek tek olsun ayni olmasin diye belirttik
+
+--3)PRIMARY KEY: Biz bir sutunu primary key yaptiysak o satir artik hem not null hemde unique olmus demektir
+
+create table arkadaslar3(
+ isim varchar(30),
+ yas number,
+ meslek varchar(20) PRIMARY KEY,--ARTIK MESLEGIMIZ NE AYNI OLABILIR NEDE BOS BIRAKILABILIR
+ cinsityet char(1)--(K veya E)
+) ;
+
+INSERT INTO arkadaslar3 VALUES ('Tayfur',27,NULL,'E');--hata verecektir bos birakildifgi icin
+INSERT INTO arkadaslar3 VALUES ('Ahmet',20,'tester','E');
+INSERT INTO arkadaslar3 VALUES ('Nazli',30,'tester','K');--HATA VERECEKTIR AYNI OLDUGU ICIN
+
+--**Alternatif primary key yontemi
+
+/*create table arkadaslar3(
+ isim varchar(30),
+ yas number,
+ meslek varchar(20),-- PRIMARY KEY
+ cinsityet char(1),--(K veya E)
+ CONSTRAINT meslek_primary PRIMARY KEY(meslek)--burda da ayni islemi yapmis olduk ikiside calisir isimizi gorur
+ 
+) ;*/
+
+--4)Foreign key :Baska bir tablodaki PRIMARY KEY leri referans gostermek icin kullanilir.
+--boylelikle de iki tablo arasinda baglanti kurulmus olur
+
+create table adresler1(
+  adres_id char(5),
+  sokak varchar(30),
+  cadde varchar(30),
+  calisma_alani varchar(15),
+  CONSTRAINT is_foreign FOREIGN KEY(calisma_alani) REFERENCES arkadaslar3(meslek)
+  
+  );
+
+--meslek ve calisma_alani uzerinden parent child iliskisi kurduk ve tablolari bagladik
+--parent de olmayan meslegi childe yazamayiz
+--foreign key null degeri atilabilir
+--onemli uyari tablolari silmek istersek child silinmeden parent silinmez
+--sadece tek sutunu degil bircok sutunu birlestirerek foreign key yapabiliriz
+
+
+--===========================================================================
+--**UPDATE VE SET**
+
+create table tedarikciler5 (
+    vergi_no NUMBER(3) PRIMARY KEY,
+    firma_ismi VARCHAR2(50),
+    irtibat_ismi VARCHAR2(50)
+    
+    );
+    
+      INSERT INTO tedarikciler5 VALUES (101, 'IBM', 'Kim Yon');
+	INSERT INTO tedarikciler5 VALUES (102, 'Huawei', 'Çin Li');
+	INSERT INTO tedarikciler5 VALUES (103, 'Erikson', 'Maki Tammamen');
+    INSERT INTO tedarikciler5 VALUES (104, 'Apple', 'Adam Eve');
+    
+    create table urunler5(
+     ted_vergino NUMBER(3), 
+    urun_id NUMBER(11), 
+    urun_isim VARCHAR2(50), 
+    musteri_isim VARCHAR2(50),
+    CONSTRAINT urunler_fk FOREIGN KEY ( ted_vergino) REFERENCES tedarikciler5 (vergi_no)--ted_vergino ile vergi_no yu foreign key ile bagladik
+    );
+
+ INSERT INTO urunler5 VALUES(101, 1001,'Laptop', 'Ayþe Can');
+    INSERT INTO urunler5 VALUES(102, 1002,'Phone', 'Fatma Aka');
+    INSERT INTO urunler5 VALUES(102, 1003,'TV', 'Ramazan Öz');
+    INSERT INTO urunler5 VALUES(102, 1004,'Laptop', 'Veli Han');
+    INSERT INTO urunler5 VALUES(103, 1005,'Phone', 'Canan Ak');
+    INSERT INTO urunler5 VALUES(104, 1006,'TV', 'Ali Bak');
+    INSERT INTO urunler5 VALUES(104, 1007,'Phone', 'Aslan Yýlmaz');
+    
+    select * from urunler5;
+    select * from tedarikciler5;
+
+-- update ve set kullaniminin yapilisi
+    ----------
+    -- UPDATE tablo_adý
+    -- SET sutun1 = yeni_deger1, sutun2 = yeni_deger2,...  
+    -- WHERE koþul;
+
+ UPDATE tedarikciler5--tederikciler tablosunda firma_ismi ni 'LG' olarak degistirdik kosulu da vergi_no su101 olanlari
+   SET firma_ismi='LG'
+   WHERE vergi_no=101;
+   SELECT * FROM tedarikciler5;
+--tum firma_ismi lerini degistirmek istersek te kosul koymadan yapariz
+
+--iki farkli zor ornek ile daha iyi oturacaktir
+
+
+--ornek1: urunler tablosundan Ali Bak’in  aldigi urunun ismini, TEDARÝKCÝ 
+-- TABLOSUNDA ÝRTÝBAT_ÝSMÝ 'Adam Eve' OLAN FÝRMANIN ÝSMÝ (FÝRMA_ÝSMÝ) ile 
+ --degistiriniz.
+ 
+ UPDATE urunler5
+ SET urun_isim =( SELECT firma_ismi FROM tedarikciler5
+                      WHERE irtibat_ismi='Adam Eve'
+ )
+ WHERE musteri_isim='Ali Bak';
+ 
+ 
+
+ 
+ -- ORNEK2: Laptop satin alan musterilerin ismini, Apple’in irtibat_isim'i ile
+ --degistirin
+    UPDATE urunler5
+    SET musteri_isim=(SELECT irtibat_ismi FROM tedarikciler5
+                          where firma_ismi='Apple')
+  
+                          WHERE urun_isim='Laptop';
+
+
+--===============================================
+--SELECT--
+-- Verileri SELECT komutu ile veritabanýndan çekerken filtreleme yapmak için SELECT ile birlikte WHERE komutu kullanýlabilir.
+
+--ORNEK1:
+ -- sinav notu 80 den buyuk olan ogrencilerin  tum  bilgilerini listele
+ 
+ 
+  SELECT * FROM ogrenciler
+  where sinav_notu>80;
+ 
+ 
+ --delete islemini de select gibi kullanabiliriz
+ 
+ --ORNEK: 
+  --id si 124 olan ogrencilerin tum bilgilerini sil
+  delete from ogrenciler--bazi bilgilerini de sildirebiliriz onu da belirtmermiz lazim 
+  where id=124;
+ 
+ 
+ 
+ --**BETWEEN**
+ 
+ CREATE TABLE personel
+    (
+        id CHAR(5),
+        isim VARCHAR2(50),
+        maas NUMBER(5)
+    );
+    
+    INSERT INTO personel VALUES('10001', 'Ahmet Aslan', 7000);
+    INSERT INTO personel VALUES( '10002', 'Mehmet Yýlmaz' ,12000);
+    INSERT INTO personel VALUES('10003', 'Meryem ', 7215);
+    INSERT INTO personel VALUES('10004', 'Veli Han', 5000);
+    INSERT INTO personel VALUES('10005', 'Mustafa Ali', 5500);
+    INSERT INTO personel VALUES('10005', 'Ayþe Can', 4000);
+    
+    SELECT * FROM personel;
+    
+ ORNEK1:  
+ --id si 10002 ile 10005 arasinda olan personelin bilgilerini listele
+ 
+     -- 1.yontem :
+     
+  SELECT * FROM personel
+  where id between '10002' AND '10005';
+  
+  -- between de ilk ve son deger dahil
+  
+  --2.yontem :
+  SELECT * FROM personel
+  where id >= '10002' AND id <= '10005';
+  
+--ORNEK2: 
+--ismi mehmet yilmaz ile veli han arasindaki personel bilgilerini listele
+  
+  SELECT * FROM personel
+WHERE isim BETWEEN 'Mehmet Yýlmaz' AND 'Veli Han';
+
+    
+--**IN**
+--IN birden fazla mantýksal ifade ile tanýmlayabileceðimiz durumlarý  tek komutla yazabilme imkâný verir
+
+--ORNEK: Maasi 4000,5000,7000 olan personelin bilgilerini listele
+
+  SELECT * FROM personel
+
+  WHERE maas IN (4000,5000,7000);--MAASI 4000,5000 ve 7000 olan personelin bilgilerini yazdir demektir
+  
+
+--==============================================================================
+--**SUBQUERY**
+----SORGU icinde calýsan sorguya subquery (alt sorgu) denir
+
+ CREATE TABLE personel
+    (
+        id NUMBER(9),
+        isim VARCHAR2(50),
+        sehir VARCHAR2(50),
+        maas NUMBER(20),
+        sirket VARCHAR2(20)
+    );
+    
+    
+    INSERT INTO personel VALUES(123456789, 'Ali Seker', 'Istanbul', 2500, 'Honda');
+    INSERT INTO personel VALUES(234567890, 'Ayse Gul', 'Istanbul', 1500, 'Toyota');
+    INSERT INTO personel VALUES(345678901, 'Veli Yilmaz', 'Ankara', 3000, 'Honda');
+    INSERT INTO personel VALUES(456789012, 'Veli Yilmaz', 'Izmir', 1000, 'Ford');
+    INSERT INTO personel VALUES(567890123, 'Veli Yilmaz', 'Ankara', 7000, 'Hyundai');
+    INSERT INTO personel VALUES(456789012, 'Ayse Gul', 'Ankara', 1500, 'Ford');
+    INSERT INTO personel VALUES(123456710, 'Fatma Yasa', 'Bursa', 2500, 'Honda');
+    CREATE TABLE sirketler
+    (
+        sirket_id NUMBER(9),
+        sirket_adi VARCHAR2(20),
+        personel_sayisi NUMBER(20)
+    );
+    INSERT INTO sirketler VALUES(100, 'Honda', 12000);
+    INSERT INTO sirketler VALUES(101, 'Ford', 18000);
+    INSERT INTO sirketler VALUES(102, 'Hyundai', 10000);
+    INSERT INTO sirketler VALUES(103, 'Toyota', 21000);
+    INSERT INTO sirketler VALUES(104, 'Mazda', 17000);
+    SELECT *FROM sirketler;
+    SELECT * FROM personel;
+    
+    
+     --  ORNEK1: PERSONEL SAYISI 15.000’den COK OLAN SÝRKETLERÝN ÝSÝMLERÝNÝ (alt sorgu þirketler)ve bu
+ -- sirkette calisan personelin isimlerini ve maaþlarýný (asýl sorgu personel) listeleyin
+--COZUM
+--asýl sorgu=>SELECT isim,maas,sirket FROM personel WHERE sirket=istenen
+--alt sorgu=>istenen=IN (SELECT sirket_adi FROM sirketler  WHERE personel_sayisi>15000));
+
+ SELECT isim, maas, sirket FROM personel
+    where sirket IN(SELECT sirket_adi FROM sirketler
+                    WHERE personel_sayisi>15000);
+                    
+  -- sehirlerini listeleyiniz.
+ SELECT isim, maas, sehir FROM personel
+ WHERE sirket IN(SELECT sirket_adi FROM sirketler
+                    WHERE sirket_id>101);
+                    
+                    
+-- ORNEK3: Ankara’da personeli olan þirketlerin þirket id'lerini ve personel
+ -- sayýlarýný listeleyiniz
+ SELECT sirket_id, personel_sayisi FROM sirketler
+ WHERE sirket_adi IN(SELECT sirket FROM personel
+                   WHERE sehir='Ankara');                   
+
+ /* ===================== AGGREGATE METOT KULLANIMI ===========================
+
+ Aggregate Metotlarý(SUM,COUNT, MIN,MAX, AVG) Subquery içinde kullanýlabilir.
+    Ancak, Sorgu tek bir deðer döndürüyor olmalýdýr.
+-- *** SELECT den sonra SUBQUERY yazarsak sorgu sonucunun sadece 1 deger getireceginden emin olmaliyiz
+
+--SELECT id,isim,maas FROM personel                                                                                                       
+  --WHERE sirket='Honda';   
+  
+-- bir tablodan tek deger getirebilmek icin ortalama AVG , toplam SUM, adet COUNT, MIN, MAX  gibi
+-- fonksiyonlar kullanilir ve bu fonksiyonlara AGGREGATE FONKSIYONLAR denir
+
+ -- ORNEK1: Her þirketin ismini, personel sayýsýný ve o þirkete ait personelin
+--  toplam maaþýný listeleyen bir Sorgu yazýnýz.
+     SELECT sirket_adi, personel_sayisi, (SELECT SUM(maas) from personel
+                                        WHERE sirketler.sirket_adi=personel.sirket) AS toplam_maas
+                                        FROM sirketler;
+                                        
+ --**AS takýsýyla istediðimiz sütuna istediðimiz adi verebiliriz**
+ 
+ --  ORNEK2: Her þirketin ismini, personel sayýsýný ve o þirkete ait personelin
+--  ortalama maaþýný listeleyen bir Sorgu yazýnýz.
+SELECT sirket_adi, personel_sayisi, (SELECT ROUND(AVG(maas)) FROM personel
+                                         WHERE sirket_adi=sirket ) AS ort_maas
+                                          FROM sirketler;
+                                          
+-- ORNEK3: Her þirketin ismini, personel sayýsýný ve o þirkete ait personelin
+--  maksimum ve minumum maaþýný listeleyen bir Sorgu yazýnýz.
+  SELECT sirket_adi,personel_sayisi,(SELECT MAX(maas) from personel
+                                      WHERE sirketler.sirket_adi=personel.sirket  ) AS max_maas,
+                                      (SELECT MIN(maas) from personel
+                                      WHERE sirket_adi=sirket) AS min_maas
+                                      FROM sirketler;
+  
+  --  ORNEK4: Her sirketin id’sini, ismini ve toplam kaç þehirde bulunduðunu
+--  listeleyen bir SORGU yazýnýz.
+SELECT sirket_id, sirket_adi, (SELECT COUNT(sehir) FROM personel
+                                     WHERE sirket=sirket_adi) AS sehir_sayisi
+                                     FROM sirketler;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
