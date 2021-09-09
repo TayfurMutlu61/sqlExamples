@@ -1,0 +1,111 @@
+/* ================================ ORDER BY  ===================================
+   ORDER BY cümleciði bir SORGU deyimi içerisinde belli bir SUTUN’a göre
+   SIRALAMA yapmak için kullanýlýr.
+   Syntax
+   -------
+      ORDER BY sutun_adi ASC   -- ARTAN
+      ORDER BY sutun_adi DESC  -- AZALAN
+========================================= */
+
+CREATE TABLE kisiler
+    (
+        ssn CHAR(9) PRIMARY KEY,
+        isim VARCHAR2(50),
+        soyisim VARCHAR2(50),
+        maas NUMBER,
+        adres VARCHAR2(50)
+    );
+    INSERT INTO kisiler VALUES(123456789, 'Ali','Can', 3000,'Istanbul');
+    INSERT INTO kisiler VALUES(234567890, 'Veli','Cem', 2890,'Ankara');
+    INSERT INTO kisiler VALUES(345678901, 'Mine','Bulut',4200,'Ankara');
+    INSERT INTO kisiler VALUES(256789012, 'Mahmut','Bulut',3150,'Istanbul');
+    INSERT INTO kisiler VALUES (344678901, 'Mine','Yasa', 5000,'Ankara');
+    INSERT INTO kisiler VALUES (345458901, 'Veli','Yilmaz',7000,'Istanbul');
+    SELECT * FROM kisiler;
+    drop table kisiler;
+/* ----------------------------------------------------------------------------
+  ORNEK1: kisiler tablosunu adres'e göre sýralayarak sorgulayýnýz.
+ -----------------------------------------------------------------------------*/
+ select * from kisiler
+ order by adres;
+ 
+ --ornek2) kisiler tablosunu maas a gore ters(azalan) siralayarak sorgulayiniz
+ 
+ select *from kisiler
+ order by maas desc;
+ 
+ 
+ --ORNEK4: ismi Mine olanlarý, SSN'e göre AZALAN(DESC) sýrada sorgulayýnýz.
+ 
+ select *from kisiler
+ where isim='Mine'
+ order by ssn desc;
+ 
+ --ORNEK5: soyismi 'i Bulut olanlarý isim sýralý olarak sorgulayýnýz.
+ 
+ select *from kisiler
+ where soyisim='Bulut'
+ order by  2;--isim yerine ismin sutun sirasi olan 2 yi kullanabiliriz
+ 
+ 
+ 
+ 
+/* ====================== FETCH NEXT, OFFSET (12C VE ÜSTÜ oracle larda çalýþýr, daha altsanýz çalýþmaz) ======================
+   FETCH cümleciði ile listelenecek kayýtlarý sýnýrlandýrabiliriz. Ýstersek
+   satýr sayýsýna göre istersek de toplam satýr sayýsýnýn belli bir yüzdesine
+   göre sýnýrlandýrma koymak mümkündür. (þu kadar satýrý getir)
+   Syntax
+   ---------
+   FETCH NEXT satir_sayisi ROWS ONLY;
+   FETCH NEXT satir_yuzdesi PERCENT ROWS ONLY;
+   OFFSET Cümleciði ile de listenecek olan satýrlardan sýrasýyla istediðimiz
+   kadarýný atlayabiliriz.
+   Syntax
+   ----------
+   OFFSET satýr_sayisi ROWS;
+==============================================================================*/
+/* ----------------------------------------------------------------------------
+  ORNEK1: MAAÞ'ý en yüksek 3 kiþinin bilgilerini listeleyen sorguyu yazýnýz.*/
+  
+  
+ /* select * from kisiler
+  order by mass desc
+  fetch next 3 rows ONLY;*/ --bununla yapiyoruz ama guncelleme oldugundan hata veriyor
+  
+  select * from (select *from kisiler 
+  order by maas desc )--(1) kisilerde maasa gore ters sirala
+  where ROWNUM<4;  --1.2 ve 3. satiri getir(bu eski surrumlerde calisir)
+  
+  --ORNEK2: MAAÞ'ý en DÜÞÜK 2 kiþinin bilgilerini listeleyen sorguyu yazýnýz.
+ 
+ /*select * from kisiler
+ order by maas 
+ fetch NEXT 2 ROWS only;*/--orjinal yeni cozum
+ 
+ select * from (select *from kisiler 
+  order by maas )--(1) kisilerde maasa gore sirala
+  where ROWNUM<3;
+  
+ -- ORNEK3: MAAÞ'a göre sýralamada 4. 5. ve 6. kiþilerin bilgilerini listeleyen
+ -- sorguyu yazýnýz.
+ /* select *from kisiler
+  order by maas desc
+  OFFSET 3 rows
+  fetch next 3 rows only;*/
+  
+  SELECT * FROM(SELECT * FROM(SELECT * FROM   kisiler
+                ORDER BY maas DESC)
+        WHERE ROWNUM <=6)
+        WHERE  ROWNUM <=3;
+        
+        
+ --diger bir cozum
+ SELECT * FROM (SELECT * FROM   kisiler WHERE ROWNUM <=6 ORDER BY maas DESC) WHERE  ROWNUM <=3;
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
